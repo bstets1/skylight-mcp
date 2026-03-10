@@ -6,7 +6,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { getConfig } from "./config.js";
 
 const require = createRequire(import.meta.url);
-const pkg = require("../../package.json") as { version: string };
+const pkg = require("../package.json") as { version: string };
 import { initializeClient } from "./api/client.js";
 import { registerCalendarTools } from "./tools/calendar.js";
 import { registerChoreTools } from "./tools/chores.js";
