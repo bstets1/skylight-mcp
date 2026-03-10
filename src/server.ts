@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import { loadConfig } from "./config.js";
+import { getConfig } from "./config.js";
 
 const require = createRequire(import.meta.url);
 const pkg = require("../../package.json") as { version: string };
@@ -24,8 +24,8 @@ import { registerPhotoTools } from "./tools/photos.js";
 export async function createServer(): Promise<{
   start: () => Promise<void>;
 }> {
-  // Validate configuration before starting
-  loadConfig();
+  // Validate configuration before starting (also caches for later use by initializeClient)
+  getConfig();
 
   // Initialize client and get subscription status BEFORE tool registration
   const client = await initializeClient();

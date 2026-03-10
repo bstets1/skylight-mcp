@@ -1,32 +1,10 @@
 import { getClient } from "../client.js";
-
-export interface AvatarResource {
-  type: "avatar";
-  id: string;
-  attributes: {
-    name?: string;
-    url?: string;
-    [key: string]: unknown;
-  };
-}
-
-export interface ColorResource {
-  type: "color";
-  id: string;
-  attributes: {
-    name?: string;
-    hex?: string;
-    [key: string]: unknown;
-  };
-}
-
-interface AvatarsResponse {
-  data: AvatarResource[];
-}
-
-interface ColorsResponse {
-  data: ColorResource[];
-}
+import type {
+  AvatarResource,
+  ColorResource,
+  AvatarsResponse,
+  ColorsResponse,
+} from "../types.js";
 
 /**
  * Get available avatar options

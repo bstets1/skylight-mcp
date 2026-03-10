@@ -124,19 +124,19 @@
 ## Phase 5: Type Safety & Consistency
 
 ### 5.1 Consolidate type definitions
-- **Status**: [ ] Pending
+- **Status**: [x] Done
 - **Files**: `src/api/endpoints/meals.ts`, `src/api/endpoints/misc.ts`, `src/api/endpoints/photos.ts`, `src/api/types.ts`
 - **Issue**: Three different type strategies across endpoint modules.
 - **Fix**: Move local types from meals/misc/photos into `types.ts`. Replace `[key: string]: unknown` with actual typed attributes where possible.
 
 ### 5.2 Use structured errors in auth.ts
-- **Status**: [ ] Pending
+- **Status**: [x] Done
 - **Files**: `src/api/auth.ts`
 - **Issue**: Throws plain `Error` objects instead of `AuthenticationError` from `utils/errors.ts`.
 - **Fix**: Use `AuthenticationError` for 401, `SkylightError` for other failures.
 
 ### 5.3 Fix config double-parse
-- **Status**: [ ] Pending
+- **Status**: [x] Done
 - **Files**: `src/config.ts`, `src/server.ts`
 - **Issue**: `loadConfig()` called in `server.ts`, then `getConfig()` calls it again. Caches disconnected.
 - **Fix**: Have `server.ts` use `getConfig()` only, or have `loadConfig()` populate the shared cache.
@@ -185,3 +185,6 @@
 | 2026-03-10 | Claude | 4.2: Verified update_reward already has assignee/respawnOnRedemption params and update_recipe already has mealCategoryId param | Done |
 | 2026-03-10 | Claude | 4.3: Updated getMealSittings endpoint to return included recipe data; tool handler now builds recipe lookup map and shows recipe name for each sitting | Done |
 | 2026-03-10 | Claude | 4.4: Removed `?? true` for includeLate and `?? false` for recurring in chores.ts, and `?? false` for routine in tasks.ts (Zod .default() already provides these) | Done |
+| 2026-03-10 | Claude | 5.1: Verified types already consolidated — MealCategoryResource, MealRecipeResource, MealSittingResource, AvatarResource, ColorResource, AlbumResource all defined in types.ts with typed attributes; endpoint files import from ../types.js | Done |
+| 2026-03-10 | Claude | 5.2: Verified auth.ts already imports and uses AuthenticationError (for 401) and SkylightError (for other HTTP failures) from ../utils/errors.js | Done |
+| 2026-03-10 | Claude | 5.3: Verified server.ts already uses getConfig() (which caches via cachedConfig) instead of calling loadConfig() directly — config is parsed once and cached | Done |

@@ -4,6 +4,7 @@
  */
 
 import { BASE_URL } from "./client.js";
+import { AuthenticationError, SkylightError } from "../utils/errors.js";
 
 export interface LoginResponse {
   data: {
@@ -55,9 +56,9 @@ export async function login(email: string, password: string): Promise<AuthResult
     }
 
     if (response.status === 401) {
-      throw new Error(`Invalid email or password. Please check your SKYLIGHT_EMAIL and SKYLIGHT_PASSWORD environment variables.`);
+      throw new AuthenticationError(`Invalid email or password. Please check your SKYLIGHT_EMAIL and SKYLIGHT_PASSWORD environment variables.`);
     }
-    throw new Error(`Login failed: HTTP ${response.status}${errorBody ? ` - ${errorBody}` : ""}`);
+    throw new SkylightError(`Login failed: HTTP ${response.status}${errorBody ? ` - ${errorBody}` : ""}`, "LOGIN_FAILED", response.status);
   }
 
   const data = (await response.json()) as LoginResponse;

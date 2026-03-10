@@ -1,64 +1,13 @@
 import { getClient } from "../client.js";
-
-// Meal types
-export interface MealCategoryResource {
-  type: "meal_category";
-  id: string;
-  attributes: {
-    name?: string;
-    position?: number;
-    [key: string]: unknown;
-  };
-}
-
-export interface MealRecipeResource {
-  type: "meal_recipe";
-  id: string;
-  attributes: {
-    summary?: string;
-    description?: string | null;
-    [key: string]: unknown;
-  };
-  relationships?: {
-    meal_category?: {
-      data: { type: string; id: string } | null;
-    };
-  };
-}
-
-export interface MealSittingResource {
-  type: "meal_sitting";
-  id: string;
-  attributes: {
-    date?: string;
-    meal_time?: string;
-    [key: string]: unknown;
-  };
-  relationships?: {
-    meal_recipe?: {
-      data: { type: string; id: string } | null;
-    };
-  };
-}
-
-interface MealCategoriesResponse {
-  data: MealCategoryResource[];
-}
-
-interface MealRecipesResponse {
-  data: MealRecipeResource[];
-  included?: MealCategoryResource[];
-}
-
-interface MealRecipeResponse {
-  data: MealRecipeResource;
-  included?: MealCategoryResource[];
-}
-
-interface MealSittingsResponse {
-  data: MealSittingResource[];
-  included?: MealRecipeResource[];
-}
+import type {
+  MealCategoryResource,
+  MealRecipeResource,
+  MealSittingResource,
+  MealCategoriesResponse,
+  MealRecipesResponse,
+  MealRecipeResponse,
+  MealSittingsResponse,
+} from "../types.js";
 
 /**
  * Get meal categories (Breakfast, Lunch, Dinner, etc.)

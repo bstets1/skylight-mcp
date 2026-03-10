@@ -63,6 +63,25 @@ describe("errors", () => {
     });
   });
 
+  describe("ParseError", () => {
+    it("creates error with default message", () => {
+      const error = new ParseError();
+      expect(error.message).toBe("Unexpected API response format");
+      expect(error.code).toBe("PARSE_ERROR");
+      expect(error.statusCode).toBeUndefined();
+      expect(error.recoverable).toBe(false);
+      expect(error.name).toBe("ParseError");
+    });
+
+    it("creates error with custom message", () => {
+      const error = new ParseError("Missing 'data' field in response");
+      expect(error.message).toBe("Missing 'data' field in response");
+      expect(error.code).toBe("PARSE_ERROR");
+      expect(error.statusCode).toBeUndefined();
+      expect(error.recoverable).toBe(false);
+    });
+  });
+
   describe("formatErrorForMcp", () => {
     it("formats AuthenticationError with guidance", () => {
       const error = new AuthenticationError();
@@ -90,6 +109,14 @@ describe("errors", () => {
       const result = formatErrorForMcp(error);
       expect(result).toContain("Configuration Error");
       expect(result).toContain("environment variables");
+    });
+
+    it("formats ParseError as a SkylightError", () => {
+      const error = new ParseError("Bad response");
+      const result = formatErrorForMcp(error);
+      // ParseError extends SkylightError, so it hits the generic SkylightError branch
+      expect(result).toContain("Skylight Error");
+      expect(result).toContain("Bad response");
     });
 
     it("formats generic SkylightError", () => {
