@@ -146,19 +146,19 @@
 ## Phase 6: Test Coverage
 
 ### 6.1 Add tests for config.ts
-- **Status**: [ ] Pending
+- **Status**: [x] Done
 - **Fix**: Test Zod validation, both auth methods, refinement rules. Mock `process.env`.
 
 ### 6.2 Add tests for api/client.ts
-- **Status**: [ ] Pending
+- **Status**: [x] Done
 - **Fix**: Test auth header construction, URL building, 401 retry, error handling. Mock fetch.
 
 ### 6.3 Add tests for date/time edge cases
-- **Status**: [ ] Pending
+- **Status**: [x] Done
 - **Fix**: Test timezone params in `parseDate`/`getDateOffset`, `parseTime` edge cases (12:30 AM/PM), `ParseError` class.
 
 ### 6.4 Add missing `ParseError` test
-- **Status**: [ ] Pending
+- **Status**: [x] Done
 - **Files**: `tests/errors.test.ts`
 - **Fix**: Add test for `ParseError` class (imported but never tested).
 
