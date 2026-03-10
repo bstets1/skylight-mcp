@@ -4,7 +4,7 @@ import type {
   RewardResource,
   RewardResponse,
   RewardPointsResponse,
-  RewardPointResource,
+  RewardPointEntry,
   CreateRewardRequest,
   UpdateRewardRequest,
 } from "../types.js";
@@ -28,14 +28,21 @@ export async function getRewards(options: GetRewardsOptions = {}): Promise<Rewar
 }
 
 /**
- * Get reward points for family members
+ * Get reward points for family members.
+ * Note: This endpoint returns a plain array, not JSON:API wrapped.
  */
-export async function getRewardPoints(): Promise<RewardPointResource[]> {
+export async function getRewardPoints(): Promise<RewardPointEntry[]> {
   const client = getClient();
   const response = await client.get<RewardPointsResponse>(
     "/api/frames/{frameId}/reward_points"
   );
-  return response.data;
+  // The endpoint returns a plain array, not { data: [...] }
+  // Handle both formats for safety
+  if (Array.isArray(response)) {
+    return response;
+  }
+  // Fallback: if it's JSON:API wrapped, extract the data
+  return (response as unknown as { data: RewardPointEntry[] }).data ?? [];
 }
 
 export interface CreateRewardOptions {
@@ -48,29 +55,20 @@ export interface CreateRewardOptions {
 }
 
 /**
- * Create a new reward
+ * Create a new reward using flat JSON body
  */
 export async function createReward(options: CreateRewardOptions): Promise<RewardResource> {
   const client = getClient();
   const request: CreateRewardRequest = {
-    data: {
-      type: "reward",
-      attributes: {
-        name: options.name,
-        point_value: options.pointValue,
-        description: options.description ?? null,
-        emoji_icon: options.emojiIcon ?? null,
-        respawn_on_redemption: options.respawnOnRedemption ?? false,
-      },
-    },
+    name: options.name,
+    point_value: options.pointValue,
+    description: options.description ?? null,
+    emoji_icon: options.emojiIcon ?? null,
+    respawn_on_redemption: options.respawnOnRedemption ?? false,
   };
 
   if (options.categoryIds && options.categoryIds.length > 0) {
-    request.data.relationships = {
-      categories: {
-        data: options.categoryIds.map((id) => ({ type: "category", id })),
-      },
-    };
+    request.category_ids = options.categoryIds;
   }
 
   const response = await client.post<RewardResponse>("/api/frames/{frameId}/rewards", request);
@@ -87,34 +85,26 @@ export interface UpdateRewardOptions {
 }
 
 /**
- * Update an existing reward
+ * Update an existing reward using flat JSON body
  */
 export async function updateReward(
   rewardId: string,
   options: UpdateRewardOptions
 ): Promise<RewardResource> {
   const client = getClient();
-  const request: UpdateRewardRequest = {
-    data: {
-      type: "reward",
-      attributes: {},
-    },
-  };
+  const request: UpdateRewardRequest = {};
 
-  if (options.name !== undefined) request.data.attributes.name = options.name;
-  if (options.pointValue !== undefined) request.data.attributes.point_value = options.pointValue;
-  if (options.description !== undefined) request.data.attributes.description = options.description;
-  if (options.emojiIcon !== undefined) request.data.attributes.emoji_icon = options.emojiIcon;
+  if (options.name !== undefined) request.name = options.name;
+  if (options.pointValue !== undefined) request.point_value = options.pointValue;
+  if (options.description !== undefined) request.description = options.description;
+  if (options.emojiIcon !== undefined) request.emoji_icon = options.emojiIcon;
   if (options.respawnOnRedemption !== undefined) {
-    request.data.attributes.respawn_on_redemption = options.respawnOnRedemption;
+    request.respawn_on_redemption = options.respawnOnRedemption;
   }
 
-  if (options.categoryIds) {
-    request.data.relationships = {
-      categories: {
-        data: options.categoryIds.map((id) => ({ type: "category", id })),
-      },
-    };
+  // Note: update uses singular category_id per OpenAPI spec
+  if (options.categoryIds && options.categoryIds.length > 0) {
+    request.category_id = options.categoryIds[0];
   }
 
   const response = await client.request<RewardResponse>(

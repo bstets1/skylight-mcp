@@ -59,41 +59,30 @@ export interface CreateChoreOptions {
 }
 
 /**
- * Create a new chore
+ * Create a new chore using the create_multiple endpoint with flat JSON body
  */
 export async function createChore(options: CreateChoreOptions): Promise<ChoreResource> {
   const client = getClient();
 
   const request: CreateChoreRequest = {
-    data: {
-      type: "chore",
-      attributes: {
-        summary: options.summary,
-        start: options.start,
-        start_time: options.startTime ?? null,
-        status: options.status ?? "pending",
-        recurring: options.recurring ?? false,
-        recurrence_set: options.recurrenceSet ?? null,
-        reward_points: options.rewardPoints ?? null,
-        emoji_icon: options.emojiIcon ?? null,
-      },
-    },
+    summary: options.summary,
+    start: options.start,
+    start_time: options.startTime ?? null,
+    recurring: options.recurring ?? false,
+    reward_points: options.rewardPoints ?? null,
+    emoji_icon: options.emojiIcon ?? null,
   };
 
-  // Add category relationship if provided
+  if (options.recurrenceSet) {
+    request.recurrence_set = [options.recurrenceSet];
+  }
+
   if (options.categoryId) {
-    request.data.relationships = {
-      category: {
-        data: {
-          type: "category",
-          id: options.categoryId,
-        },
-      },
-    };
+    request.category_id = options.categoryId;
   }
 
   const response = await client.post<ChoreResponse>(
-    "/api/frames/{frameId}/chores",
+    "/api/frames/{frameId}/chores/create_multiple",
     request
   );
 
@@ -110,10 +99,11 @@ export interface UpdateChoreOptions {
   categoryId?: string | null;
   rewardPoints?: number | null;
   emojiIcon?: string | null;
+  applyTo?: string;
 }
 
 /**
- * Update an existing chore
+ * Update an existing chore using flat JSON body
  */
 export async function updateChore(
   choreId: string,
@@ -121,33 +111,17 @@ export async function updateChore(
 ): Promise<ChoreResource> {
   const client = getClient();
 
-  const request: UpdateChoreRequest = {
-    data: {
-      type: "chore",
-      attributes: {},
-    },
-  };
+  const request: UpdateChoreRequest = {};
 
-  // Map options to attributes
-  if (options.summary !== undefined) request.data.attributes.summary = options.summary;
-  if (options.start !== undefined) request.data.attributes.start = options.start;
-  if (options.startTime !== undefined) request.data.attributes.start_time = options.startTime;
-  if (options.status !== undefined) request.data.attributes.status = options.status;
-  if (options.recurring !== undefined) request.data.attributes.recurring = options.recurring;
-  if (options.recurrenceSet !== undefined) request.data.attributes.recurrence_set = options.recurrenceSet;
-  if (options.rewardPoints !== undefined) request.data.attributes.reward_points = options.rewardPoints;
-  if (options.emojiIcon !== undefined) request.data.attributes.emoji_icon = options.emojiIcon;
-
-  // Handle category relationship
-  if (options.categoryId !== undefined) {
-    if (options.categoryId === null) {
-      request.data.relationships = { category: { data: null } };
-    } else {
-      request.data.relationships = {
-        category: { data: { type: "category", id: options.categoryId } },
-      };
-    }
-  }
+  if (options.summary !== undefined) request.summary = options.summary;
+  if (options.start !== undefined) request.start = options.start;
+  if (options.startTime !== undefined) request.start_time = options.startTime;
+  if (options.status !== undefined) request.status = options.status;
+  if (options.recurring !== undefined) request.recurring = options.recurring;
+  if (options.recurrenceSet !== undefined) request.recurrence_set = options.recurrenceSet;
+  if (options.rewardPoints !== undefined) request.reward_points = options.rewardPoints;
+  if (options.emojiIcon !== undefined) request.emoji_icon = options.emojiIcon;
+  if (options.categoryId !== undefined) request.category_id = options.categoryId;
 
   const response = await client.request<ChoreResponse>(
     `/api/frames/{frameId}/chores/${choreId}`,
@@ -159,10 +133,14 @@ export async function updateChore(
 
 /**
  * Delete a chore
+ * @param applyTo - For recurring chores: controls scope of deletion
  */
-export async function deleteChore(choreId: string): Promise<void> {
+export async function deleteChore(choreId: string, applyTo?: string): Promise<void> {
   const client = getClient();
-  await client.request(`/api/frames/{frameId}/chores/${choreId}`, {
+  const url = applyTo
+    ? `/api/frames/{frameId}/chores/${choreId}?apply_to=${encodeURIComponent(applyTo)}`
+    : `/api/frames/{frameId}/chores/${choreId}`;
+  await client.request(url, {
     method: "DELETE",
   });
 }

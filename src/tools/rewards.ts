@@ -117,15 +117,14 @@ Use this to answer:
 
         const pointsList = points
           .map((point) => {
-            const attrs = point.attributes as Record<string, unknown>;
-            const name = (attrs.name as string) ?? (attrs.label as string) ?? `Member ${point.id}`;
+            const name = `Category ${point.category_id ?? "Unknown"}`;
             const parts = [`- ${name}`];
 
-            if (attrs.balance !== null && attrs.balance !== undefined) {
-              parts.push(`  Balance: ${attrs.balance} points`);
+            if (point.current_point_balance !== null && point.current_point_balance !== undefined) {
+              parts.push(`  Balance: ${point.current_point_balance} points`);
             }
-            if (attrs.total_earned !== null && attrs.total_earned !== undefined) {
-              parts.push(`  Total earned: ${attrs.total_earned}`);
+            if (point.lifetime_points_earned !== null && point.lifetime_points_earned !== undefined) {
+              parts.push(`  Total earned: ${point.lifetime_points_earned}`);
             }
 
             return parts.join("\n");

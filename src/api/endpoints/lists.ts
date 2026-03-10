@@ -126,7 +126,7 @@ export async function deleteList(listId: string): Promise<void> {
 }
 
 /**
- * Create a new list item
+ * Create a new list item using flat JSON body
  */
 export async function createListItem(
   listId: string,
@@ -135,14 +135,11 @@ export async function createListItem(
 ): Promise<ListItemResource> {
   const client = getClient();
   const request: CreateListItemRequest = {
-    data: {
-      type: "list_item",
-      attributes: {
-        label,
-        section: section ?? null,
-      },
-    },
+    label,
   };
+  if (section) {
+    request.section = section;
+  }
   const response = await client.post<ListItemResponse>(
     `/api/frames/{frameId}/lists/${listId}/list_items`,
     request
@@ -151,7 +148,7 @@ export async function createListItem(
 }
 
 /**
- * Update a list item
+ * Update a list item using flat JSON body
  */
 export async function updateListItem(
   listId: string,
@@ -159,12 +156,10 @@ export async function updateListItem(
   updates: { label?: string; status?: "pending" | "completed"; section?: string | null }
 ): Promise<ListItemResource> {
   const client = getClient();
-  const request: UpdateListItemRequest = {
-    data: {
-      type: "list_item",
-      attributes: updates,
-    },
-  };
+  const request: UpdateListItemRequest = {};
+  if (updates.label !== undefined) request.label = updates.label;
+  if (updates.status !== undefined) request.status = updates.status;
+  if (updates.section !== undefined) request.section = updates.section;
   const response = await client.request<ListItemResponse>(
     `/api/frames/{frameId}/lists/${listId}/list_items/${itemId}`,
     { method: "PUT", body: request }
