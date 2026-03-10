@@ -332,3 +332,102 @@ export interface UpdateRewardRequest {
 }
 
 export type RewardResponse = JsonApiResponse<RewardResource>;
+
+// Meal types
+export interface MealCategoryAttributes {
+  name?: string;
+  position?: number;
+  [key: string]: unknown;
+}
+
+export interface MealCategoryResource {
+  type: "meal_category";
+  id: string;
+  attributes: MealCategoryAttributes;
+}
+
+export interface MealRecipeAttributes {
+  summary?: string;
+  description?: string | null;
+  [key: string]: unknown;
+}
+
+export interface MealRecipeResource {
+  type: "meal_recipe";
+  id: string;
+  attributes: MealRecipeAttributes;
+  relationships?: {
+    meal_category?: {
+      data: JsonApiResourceId | null;
+    };
+  };
+}
+
+export interface MealSittingAttributes {
+  date?: string;
+  meal_time?: string;
+  [key: string]: unknown;
+}
+
+export interface MealSittingResource {
+  type: "meal_sitting";
+  id: string;
+  attributes: MealSittingAttributes;
+  relationships?: {
+    meal_recipe?: {
+      data: JsonApiResourceId | null;
+    };
+  };
+}
+
+export type MealCategoriesResponse = JsonApiResponse<MealCategoryResource[]>;
+export type MealRecipesResponse = JsonApiResponse<MealRecipeResource[], MealCategoryResource>;
+export type MealRecipeResponse = JsonApiResponse<MealRecipeResource, MealCategoryResource>;
+export type MealSittingsResponse = JsonApiResponse<MealSittingResource[], MealRecipeResource>;
+
+// Avatar types
+export interface AvatarAttributes {
+  name?: string;
+  url?: string;
+  [key: string]: unknown;
+}
+
+export interface AvatarResource {
+  type: "avatar";
+  id: string;
+  attributes: AvatarAttributes;
+}
+
+export type AvatarsResponse = JsonApiResponse<AvatarResource[]>;
+
+// Color types
+export interface ColorAttributes {
+  name?: string;
+  hex?: string;
+  [key: string]: unknown;
+}
+
+export interface ColorResource {
+  type: "color";
+  id: string;
+  attributes: ColorAttributes;
+}
+
+export type ColorsResponse = JsonApiResponse<ColorResource[]>;
+
+// Album types
+export interface AlbumAttributes {
+  name?: string;
+  photo_count?: number | null;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+}
+
+export interface AlbumResource {
+  type: "album";
+  id: string;
+  attributes: AlbumAttributes;
+}
+
+export type AlbumsResponse = JsonApiResponse<AlbumResource[]>;

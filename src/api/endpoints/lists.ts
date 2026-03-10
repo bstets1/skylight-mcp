@@ -46,6 +46,12 @@ export async function getListWithItems(listId: string): Promise<GetListWithItems
 export async function findListByName(name: string): Promise<ListResource | undefined> {
   const lists = await getLists();
   const lowerName = name.toLowerCase();
+
+  // Try exact match first (case-insensitive)
+  const exactMatch = lists.find((list) => list.attributes.label.toLowerCase() === lowerName);
+  if (exactMatch) return exactMatch;
+
+  // Fall back to partial match only if no exact match
   return lists.find((list) => list.attributes.label.toLowerCase().includes(lowerName));
 }
 

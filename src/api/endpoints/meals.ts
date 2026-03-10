@@ -1,64 +1,13 @@
 import { getClient } from "../client.js";
-
-// Meal types
-export interface MealCategoryResource {
-  type: "meal_category";
-  id: string;
-  attributes: {
-    name?: string;
-    position?: number;
-    [key: string]: unknown;
-  };
-}
-
-export interface MealRecipeResource {
-  type: "meal_recipe";
-  id: string;
-  attributes: {
-    summary?: string;
-    description?: string | null;
-    [key: string]: unknown;
-  };
-  relationships?: {
-    meal_category?: {
-      data: { type: string; id: string } | null;
-    };
-  };
-}
-
-export interface MealSittingResource {
-  type: "meal_sitting";
-  id: string;
-  attributes: {
-    date?: string;
-    meal_time?: string;
-    [key: string]: unknown;
-  };
-  relationships?: {
-    meal_recipe?: {
-      data: { type: string; id: string } | null;
-    };
-  };
-}
-
-interface MealCategoriesResponse {
-  data: MealCategoryResource[];
-}
-
-interface MealRecipesResponse {
-  data: MealRecipeResource[];
-  included?: MealCategoryResource[];
-}
-
-interface MealRecipeResponse {
-  data: MealRecipeResource;
-  included?: MealCategoryResource[];
-}
-
-interface MealSittingsResponse {
-  data: MealSittingResource[];
-  included?: MealRecipeResource[];
-}
+import type {
+  MealCategoryResource,
+  MealRecipeResource,
+  MealSittingResource,
+  MealCategoriesResponse,
+  MealRecipesResponse,
+  MealRecipeResponse,
+  MealSittingsResponse,
+} from "../types.js";
 
 /**
  * Get meal categories (Breakfast, Lunch, Dinner, etc.)
@@ -179,11 +128,18 @@ export interface GetMealSittingsOptions {
 /**
  * Get meal sittings (scheduled meals)
  */
+export interface GetMealSittingsResult {
+  sittings: MealSittingResource[];
+  recipes: MealRecipeResource[];
+}
+
 export async function getMealSittings(
   options: GetMealSittingsOptions = {}
-): Promise<MealSittingResource[]> {
+): Promise<GetMealSittingsResult> {
   const client = getClient();
-  const params: Record<string, string | undefined> = {};
+  const params: Record<string, string | undefined> = {
+    include: "meal_recipe",
+  };
   if (options.dateMin) params.date_min = options.dateMin;
   if (options.dateMax) params.date_max = options.dateMax;
 
@@ -191,7 +147,10 @@ export async function getMealSittings(
     "/api/frames/{frameId}/meals/sittings",
     params
   );
-  return response.data;
+  return {
+    sittings: response.data,
+    recipes: response.included ?? [],
+  };
 }
 
 export interface CreateMealSittingOptions {

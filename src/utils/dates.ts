@@ -26,6 +26,15 @@ export function getDateOffset(days: number, timezone?: string): string {
 }
 
 /**
+ * Get a date N days from a given date string (YYYY-MM-DD) in YYYY-MM-DD format
+ */
+export function getDateOffsetFrom(dateStr: string, days: number): string {
+  const date = new Date(dateStr + "T12:00:00");
+  date.setDate(date.getDate() + days);
+  return date.toISOString().split("T")[0];
+}
+
+/**
  * Parse a date string to YYYY-MM-DD format
  * Accepts: YYYY-MM-DD, MM/DD/YYYY, or natural language like "today", "tomorrow"
  */
@@ -48,7 +57,15 @@ export function parseDate(input: string, timezone?: string): string {
   const dayIndex = days.indexOf(lower);
   if (dayIndex !== -1) {
     const today = new Date();
-    const todayDay = today.getDay();
+    let todayDay: number;
+    if (timezone) {
+      // Determine the current day-of-week in the configured timezone
+      const todayInTz = new Intl.DateTimeFormat("en-US", { timeZone: timezone, weekday: "short" }).format(today);
+      const weekdayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+      todayDay = weekdayMap[todayInTz] ?? today.getDay();
+    } else {
+      todayDay = today.getDay();
+    }
     let daysUntil = dayIndex - todayDay;
     if (daysUntil <= 0) {
       daysUntil += 7; // Next week if today or past
@@ -56,9 +73,15 @@ export function parseDate(input: string, timezone?: string): string {
     return getDateOffset(daysUntil, timezone);
   }
 
-  // Already in YYYY-MM-DD format
-  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
-    return input;
+  // Already in YYYY-MM-DD format - validate month/day ranges
+  const isoMatch = input.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const month = parseInt(isoMatch[2], 10);
+    const day = parseInt(isoMatch[3], 10);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return input;
+    }
+    // Invalid month/day, fall through to other parsing attempts
   }
 
   // MM/DD/YYYY format
@@ -87,8 +110,13 @@ export function parseTime(input: string): string {
 
   // Already in HH:MM format (24-hour)
   if (/^\d{1,2}:\d{2}$/.test(trimmed)) {
-    const [hours, minutes] = trimmed.split(":");
-    return `${hours.padStart(2, "0")}:${minutes}`;
+    const [hoursStr, minutes] = trimmed.split(":");
+    const h = parseInt(hoursStr, 10);
+    const m = parseInt(minutes, 10);
+    if (h < 0 || h > 23 || m < 0 || m > 59) {
+      return trimmed;
+    }
+    return `${hoursStr.padStart(2, "0")}:${minutes}`;
   }
 
   // 12-hour format with AM/PM
@@ -96,6 +124,10 @@ export function parseTime(input: string): string {
   if (match) {
     const [, hours, minutes, period] = match;
     let h = parseInt(hours, 10);
+    const m = parseInt(minutes, 10);
+    if (h < 1 || h > 12 || m < 0 || m > 59) {
+      return trimmed;
+    }
     if (period.toUpperCase() === "PM" && h !== 12) {
       h += 12;
     } else if (period.toUpperCase() === "AM" && h === 12) {

@@ -50,14 +50,17 @@ Use this to answer:
 
         const rewardList = rewards
           .map((reward) => {
-            const parts = [`- Reward (ID: ${reward.id})`];
+            const attrs = reward.attributes as Record<string, unknown>;
+            const name = (attrs.name as string) ?? "Unnamed";
+            const parts = [`- ${name} (ID: ${reward.id})`];
 
-            const attrs = reward.attributes;
-            for (const [key, value] of Object.entries(attrs)) {
-              if (value !== null && value !== undefined) {
-                parts.push(`  ${key}: ${value}`);
-              }
+            if (attrs.point_value !== null && attrs.point_value !== undefined) {
+              parts.push(`  Points: ${attrs.point_value}`);
             }
+            if (attrs.description) parts.push(`  Description: ${attrs.description}`);
+            if (attrs.emoji_icon) parts.push(`  Emoji: ${attrs.emoji_icon}`);
+            if (attrs.respawn_on_redemption) parts.push(`  Repeatable: Yes`);
+            if (attrs.redeemed_at) parts.push(`  Redeemed: ${attrs.redeemed_at}`);
 
             return parts.join("\n");
           })
@@ -114,13 +117,15 @@ Use this to answer:
 
         const pointsList = points
           .map((point) => {
-            const parts = [`- Points (ID: ${point.id})`];
+            const attrs = point.attributes as Record<string, unknown>;
+            const name = (attrs.name as string) ?? (attrs.label as string) ?? `Member ${point.id}`;
+            const parts = [`- ${name}`];
 
-            const attrs = point.attributes;
-            for (const [key, value] of Object.entries(attrs)) {
-              if (value !== null && value !== undefined) {
-                parts.push(`  ${key}: ${value}`);
-              }
+            if (attrs.balance !== null && attrs.balance !== undefined) {
+              parts.push(`  Balance: ${attrs.balance} points`);
+            }
+            if (attrs.total_earned !== null && attrs.total_earned !== undefined) {
+              parts.push(`  Total earned: ${attrs.total_earned}`);
             }
 
             return parts.join("\n");
@@ -238,9 +243,10 @@ Returns: The updated reward details.`,
       pointValue: z.number().optional().describe("New point cost"),
       description: z.string().nullable().optional().describe("Updated description (null to clear)"),
       emojiIcon: z.string().nullable().optional().describe("Updated emoji (null to clear)"),
+      assignee: z.string().optional().describe("Family member to assign this reward to"),
       respawnOnRedemption: z.boolean().optional().describe("Can be redeemed multiple times"),
     },
-    async ({ rewardId, name, pointValue, description, emojiIcon, respawnOnRedemption }) => {
+    async ({ rewardId, name, pointValue, description, emojiIcon, assignee, respawnOnRedemption }) => {
       try {
         const updates: Parameters<typeof updateReward>[1] = {};
         if (name !== undefined) updates.name = name;
@@ -248,6 +254,17 @@ Returns: The updated reward details.`,
         if (description !== undefined) updates.description = description;
         if (emojiIcon !== undefined) updates.emojiIcon = emojiIcon;
         if (respawnOnRedemption !== undefined) updates.respawnOnRedemption = respawnOnRedemption;
+
+        if (assignee !== undefined) {
+          const category = await findCategoryByName(assignee);
+          if (!category) {
+            return {
+              content: [{ type: "text" as const, text: `Could not find family member "${assignee}"` }],
+              isError: true,
+            };
+          }
+          updates.categoryIds = [category.id];
+        }
 
         const reward = await updateReward(rewardId, updates);
 

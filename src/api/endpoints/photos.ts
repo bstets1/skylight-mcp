@@ -1,17 +1,5 @@
 import { getClient } from "../client.js";
-
-export interface AlbumResource {
-  type: "album";
-  id: string;
-  attributes: {
-    name?: string;
-    [key: string]: unknown;
-  };
-}
-
-interface AlbumsResponse {
-  data: AlbumResource[];
-}
+import type { AlbumResource, AlbumsResponse } from "../types.js";
 
 /**
  * Get photo albums

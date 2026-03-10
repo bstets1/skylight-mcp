@@ -1,7 +1,12 @@
+import { createRequire } from "node:module";
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import { loadConfig } from "./config.js";
+import { getConfig } from "./config.js";
+
+const require = createRequire(import.meta.url);
+const pkg = require("../../package.json") as { version: string };
 import { initializeClient } from "./api/client.js";
 import { registerCalendarTools } from "./tools/calendar.js";
 import { registerChoreTools } from "./tools/chores.js";
@@ -19,8 +24,8 @@ import { registerPhotoTools } from "./tools/photos.js";
 export async function createServer(): Promise<{
   start: () => Promise<void>;
 }> {
-  // Validate configuration before starting
-  loadConfig();
+  // Validate configuration before starting (also caches for later use by initializeClient)
+  getConfig();
 
   // Initialize client and get subscription status BEFORE tool registration
   const client = await initializeClient();
@@ -28,7 +33,7 @@ export async function createServer(): Promise<{
 
   const server = new McpServer({
     name: "skylight",
-    version: "1.0.0",
+    version: pkg.version,
   });
 
   // Register base tools (always available)
