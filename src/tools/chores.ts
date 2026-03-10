@@ -96,7 +96,7 @@ Returns chores with their assignees, due dates, and completion status.`,
             const assigneeName = categoryId ? categoryMap.get(categoryId) : null;
 
             const parts = [
-              `- ${attrs.summary}`,
+              `- ${attrs.summary} (ID: ${chore.id})`,
               `  Date: ${formatDateForDisplay(attrs.start)}${attrs.start_time ? ` at ${attrs.start_time}` : ""}`,
               `  Status: ${attrs.status}`,
             ];
@@ -291,8 +291,9 @@ Returns: The updated chore details.`,
       time: z.string().nullable().optional().describe("New due time (e.g., '10:00 AM', or null to clear)"),
       assignee: z.string().nullable().optional().describe("New family member assignment (or null to unassign)"),
       rewardPoints: z.number().nullable().optional().describe("New reward points (or null to clear)"),
+      applyTo: z.string().optional().describe("For recurring chores: scope of update (e.g., 'this', 'all', 'future')"),
     },
-    async ({ choreId, summary, status, date, time, assignee, rewardPoints }) => {
+    async ({ choreId, summary, status, date, time, assignee, rewardPoints, applyTo }) => {
       try {
         const config = getConfig();
         const updates: Parameters<typeof updateChore>[1] = {};
@@ -302,6 +303,7 @@ Returns: The updated chore details.`,
         if (date !== undefined) updates.start = parseDate(date, config.timezone);
         if (time !== undefined) updates.startTime = time ? parseTime(time) : null;
         if (rewardPoints !== undefined) updates.rewardPoints = rewardPoints;
+        if (applyTo !== undefined) updates.applyTo = applyTo;
 
         // Handle assignee
         if (assignee !== undefined) {
@@ -356,13 +358,14 @@ Use this when:
 Parameters:
 - choreId (required): ID of the chore to delete (from get_chores)
 
-Note: This permanently removes the chore. For recurring chores, this may only delete one instance.`,
+Note: This permanently removes the chore. For recurring chores, use applyTo to control scope.`,
     {
       choreId: z.string().describe("ID of the chore to delete"),
+      applyTo: z.string().optional().describe("For recurring chores: scope of deletion (e.g., 'this', 'all', 'future')"),
     },
-    async ({ choreId }) => {
+    async ({ choreId, applyTo }) => {
       try {
-        await deleteChore(choreId);
+        await deleteChore(choreId, applyTo);
         return {
           content: [
             {

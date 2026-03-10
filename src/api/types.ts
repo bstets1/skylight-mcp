@@ -187,15 +187,27 @@ export type SourceCalendarsResponse = JsonApiResponse<SourceCalendarResource[]>;
 export type CalendarEventsResponse = JsonApiResponse<CalendarEventResource[], CategoryResource | SourceCalendarResource>;
 export type TaskBoxItemResponse = JsonApiResponse<TaskBoxItemResource>;
 export type RewardsResponse = JsonApiResponse<RewardResource[]>;
-export type RewardPointsResponse = JsonApiResponse<RewardPointResource[]>;
+// Reward points endpoint returns a plain array, not JSON:API wrapped
+export interface RewardPointEntry {
+  category_id?: number;
+  current_point_balance?: number;
+  lifetime_points_earned?: number;
+}
+export type RewardPointsResponse = RewardPointEntry[];
 
-// Request body types for creating resources
+// Request body types for creating resources (flat JSON, not JSON:API wrapped)
 export interface CreateChoreRequest {
-  data: {
-    type: "chore";
-    attributes: Partial<ChoreAttributes>;
-    relationships?: ChoreRelationships;
-  };
+  summary: string;
+  start: string;
+  start_time?: string | null;
+  status?: string;
+  recurring?: boolean;
+  recurrence_set?: string[] | null;
+  reward_points?: number | null;
+  emoji_icon?: string | null;
+  category_id?: string;
+  category_ids?: string[];
+  routine?: boolean;
 }
 
 export interface CreateTaskBoxItemRequest {
@@ -228,27 +240,16 @@ export interface UpdateListRequest {
   };
 }
 
-// List item request types
+// List item request types (flat JSON, not JSON:API wrapped)
 export interface CreateListItemRequest {
-  data: {
-    type: "list_item";
-    attributes: {
-      label: string;
-      section?: string | null;
-    };
-  };
+  label: string;
+  section?: string | null;
 }
 
 export interface UpdateListItemRequest {
-  data: {
-    type: "list_item";
-    attributes: Partial<{
-      label: string;
-      status: "pending" | "completed";
-      section: string | null;
-      position: number | null;
-    }>;
-  };
+  label?: string;
+  status?: "pending" | "completed";
+  section?: string | null;
 }
 
 export type ListItemResponse = JsonApiResponse<ListItemResource>;
@@ -285,50 +286,39 @@ export interface UpdateCalendarEventRequest {
 
 export type CalendarEventResponse = JsonApiResponse<CalendarEventResource>;
 
-// Chore update request type
+// Chore update request type (flat JSON, not JSON:API wrapped)
 export interface UpdateChoreRequest {
-  data: {
-    type: "chore";
-    attributes: Partial<ChoreAttributes>;
-    relationships?: ChoreRelationships;
-  };
+  summary?: string;
+  start?: string;
+  start_time?: string | null;
+  status?: string;
+  recurring?: boolean;
+  recurrence_set?: unknown;
+  reward_points?: number | null;
+  emoji_icon?: string | null;
+  category_id?: string | null;
+  category_ids?: string[];
+  routine?: boolean;
+  position?: number;
 }
 
-// Reward request types
+// Reward request types (flat JSON, not JSON:API wrapped)
 export interface CreateRewardRequest {
-  data: {
-    type: "reward";
-    attributes: {
-      name: string;
-      description?: string | null;
-      emoji_icon?: string | null;
-      point_value: number;
-      respawn_on_redemption?: boolean;
-    };
-    relationships?: {
-      categories?: {
-        data: JsonApiResourceId[];
-      };
-    };
-  };
+  name: string;
+  point_value: number;
+  description?: string | null;
+  emoji_icon?: string | null;
+  respawn_on_redemption?: boolean;
+  category_ids?: string[];
 }
 
 export interface UpdateRewardRequest {
-  data: {
-    type: "reward";
-    attributes: Partial<{
-      name: string;
-      description: string | null;
-      emoji_icon: string | null;
-      point_value: number;
-      respawn_on_redemption: boolean;
-    }>;
-    relationships?: {
-      categories?: {
-        data: JsonApiResourceId[];
-      };
-    };
-  };
+  name?: string;
+  point_value?: number;
+  description?: string | null;
+  emoji_icon?: string | null;
+  respawn_on_redemption?: boolean;
+  category_id?: string;
 }
 
 export type RewardResponse = JsonApiResponse<RewardResource>;
