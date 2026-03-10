@@ -83,7 +83,7 @@ Returns list names, types (shopping/to_do), and item counts.`,
             const attrs = list.attributes;
             const itemCount = list.relationships?.list_items?.data?.length ?? 0;
             const parts = [
-              `- ${attrs.label}`,
+              `- ${attrs.label} (ID: ${list.id})`,
               `  Type: ${attrs.kind === "shopping" ? "Shopping list" : "To-do list"}`,
               `  Items: ${itemCount}`,
             ];
@@ -233,7 +233,7 @@ Returns items organized by section with their completion status.`,
         if (noSection.length > 0) {
           for (const item of noSection) {
             const status = item.attributes.status === "completed" ? "[x]" : "[ ]";
-            output.push(`${status} ${item.attributes.label}`);
+            output.push(`${status} ${item.attributes.label} (ID: ${item.id})`);
           }
         }
 
@@ -242,7 +242,7 @@ Returns items organized by section with their completion status.`,
           output.push(`\n${sectionName}:`);
           for (const item of sectionItems) {
             const status = item.attributes.status === "completed" ? "[x]" : "[ ]";
-            output.push(`${status} ${item.attributes.label}`);
+            output.push(`${status} ${item.attributes.label} (ID: ${item.id})`);
           }
         }
 

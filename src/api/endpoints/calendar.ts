@@ -20,7 +20,7 @@ export interface GetCalendarEventsOptions {
  * Add days to a date string in YYYY-MM-DD format
  */
 function addDays(dateStr: string, days: number): string {
-  const date = new Date(dateStr + "T00:00:00");
+  const date = new Date(dateStr + "T12:00:00");
   date.setDate(date.getDate() + days);
   return date.toISOString().split("T")[0];
 }
@@ -84,7 +84,16 @@ export async function updateCalendarEvent(
   const client = getClient();
   const response = await client.request<CalendarEventResponse>(
     `/api/frames/{frameId}/calendar_events/${eventId}`,
-    { method: "PUT", body: data }
+    {
+      method: "PUT",
+      body: {
+        data: {
+          type: "calendar_event",
+          id: eventId,
+          attributes: data,
+        },
+      },
+    }
   );
   return response.data;
 }

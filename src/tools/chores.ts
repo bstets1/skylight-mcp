@@ -3,7 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { getChores, createChore, updateChore, deleteChore } from "../api/endpoints/chores.js";
 import { findCategoryByName } from "../api/endpoints/categories.js";
-import { getTodayDate, getDateOffset, parseDate, parseTime, formatDateForDisplay } from "../utils/dates.js";
+import { getTodayDate, getDateOffsetFrom, parseDate, parseTime, formatDateForDisplay } from "../utils/dates.js";
 import { formatErrorForMcp } from "../utils/errors.js";
 import { getConfig } from "../config.js";
 
@@ -48,12 +48,12 @@ Returns chores with their assignees, due dates, and completion status.`,
       try {
         const config = getConfig();
         const startDate = date ? parseDate(date, config.timezone) : getTodayDate(config.timezone);
-        const endDate = dateEnd ? parseDate(dateEnd, config.timezone) : getDateOffset(7, config.timezone);
+        const endDate = dateEnd ? parseDate(dateEnd, config.timezone) : getDateOffsetFrom(startDate, 7);
 
         const result = await getChores({
           after: startDate,
           before: endDate,
-          includeLate: includeLate ?? true,
+          includeLate,
         });
 
         let chores = result.chores;
@@ -224,7 +224,7 @@ The chore will appear on the Skylight display.`,
           start: choreDate,
           startTime: time ? parseTime(time) : undefined,
           categoryId,
-          recurring: recurring ?? false,
+          recurring,
           recurrenceSet,
           rewardPoints,
         });

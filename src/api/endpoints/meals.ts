@@ -179,11 +179,18 @@ export interface GetMealSittingsOptions {
 /**
  * Get meal sittings (scheduled meals)
  */
+export interface GetMealSittingsResult {
+  sittings: MealSittingResource[];
+  recipes: MealRecipeResource[];
+}
+
 export async function getMealSittings(
   options: GetMealSittingsOptions = {}
-): Promise<MealSittingResource[]> {
+): Promise<GetMealSittingsResult> {
   const client = getClient();
-  const params: Record<string, string | undefined> = {};
+  const params: Record<string, string | undefined> = {
+    include: "meal_recipe",
+  };
   if (options.dateMin) params.date_min = options.dateMin;
   if (options.dateMax) params.date_max = options.dateMax;
 
@@ -191,7 +198,10 @@ export async function getMealSittings(
     "/api/frames/{frameId}/meals/sittings",
     params
   );
-  return response.data;
+  return {
+    sittings: response.data,
+    recipes: response.included ?? [],
+  };
 }
 
 export interface CreateMealSittingOptions {

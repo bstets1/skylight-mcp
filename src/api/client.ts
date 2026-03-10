@@ -7,7 +7,7 @@ import {
   SkylightError,
 } from "../utils/errors.js";
 
-const BASE_URL = "https://app.ourskylight.com";
+export const BASE_URL = "https://app.ourskylight.com";
 
 /**
  * Skylight subscription status types
@@ -191,6 +191,7 @@ export class SkylightClient {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(30_000),
     });
 
     console.error(`[client] Response: ${response.status}`);
@@ -204,11 +205,6 @@ export class SkylightClient {
         return this.request<T>(endpoint, options, true);
       }
       await this.handleResponseError(response, url);
-    }
-
-    // Handle 304 Not Modified
-    if (response.status === 304) {
-      return {} as T;
     }
 
     return response.json() as Promise<T>;

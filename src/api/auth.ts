@@ -3,7 +3,7 @@
  * Handles login via email/password to obtain API token
  */
 
-const BASE_URL = "https://app.ourskylight.com";
+import { BASE_URL } from "./client.js";
 
 export interface LoginResponse {
   data: {
@@ -62,7 +62,7 @@ export async function login(email: string, password: string): Promise<AuthResult
 
   const data = (await response.json()) as LoginResponse;
 
-  console.error(`[auth] Login successful, token prefix: ${data.data.attributes.token.substring(0, 10)}...`);
+  console.error("[auth] Login successful");
 
   return {
     userId: data.data.id,
@@ -70,26 +70,4 @@ export async function login(email: string, password: string): Promise<AuthResult
     token: data.data.attributes.token,
     subscriptionStatus: data.data.attributes.subscription_status,
   };
-}
-
-// Cache for auth result
-let cachedAuth: AuthResult | null = null;
-
-/**
- * Get cached auth result or login if needed
- */
-export async function getAuth(email: string, password: string): Promise<AuthResult> {
-  if (cachedAuth) {
-    return cachedAuth;
-  }
-
-  cachedAuth = await login(email, password);
-  return cachedAuth;
-}
-
-/**
- * Clear cached auth (for re-login)
- */
-export function clearAuthCache(): void {
-  cachedAuth = null;
 }

@@ -113,12 +113,31 @@ Returns: Recipe details including description.`,
       try {
         const recipe = await getRecipe(recipeId);
 
-        const parts = [`Recipe: ${recipe.attributes.summary ?? "Untitled"}`];
-        for (const [key, value] of Object.entries(recipe.attributes)) {
-          if (value !== null && value !== undefined && key !== "summary") {
-            parts.push(`${key}: ${value}`);
-          }
+        const attrs = recipe.attributes;
+        const parts = [`Recipe: ${attrs.summary ?? "Untitled"} (ID: ${recipe.id})`];
+
+        if (attrs.description) parts.push(`Description: ${attrs.description}`);
+
+        const categoryId = recipe.relationships?.meal_category?.data?.id;
+        if (categoryId) parts.push(`Category ID: ${categoryId}`);
+
+        if (attrs.ingredients) {
+          const ingredientsStr =
+            typeof attrs.ingredients === "object"
+              ? JSON.stringify(attrs.ingredients)
+              : String(attrs.ingredients);
+          parts.push(`Ingredients: ${ingredientsStr}`);
         }
+        if (attrs.instructions) {
+          const instructionsStr =
+            typeof attrs.instructions === "object"
+              ? JSON.stringify(attrs.instructions)
+              : String(attrs.instructions);
+          parts.push(`Instructions: ${instructionsStr}`);
+        }
+        if (attrs.prep_time) parts.push(`Prep time: ${attrs.prep_time}`);
+        if (attrs.cook_time) parts.push(`Cook time: ${attrs.cook_time}`);
+        if (attrs.servings) parts.push(`Servings: ${attrs.servings}`);
 
         return {
           content: [{ type: "text" as const, text: parts.join("\n") }],
@@ -187,12 +206,14 @@ Returns: The updated recipe.`,
       recipeId: z.string().describe("ID of the recipe to update"),
       summary: z.string().optional().describe("New recipe name"),
       description: z.string().nullable().optional().describe("New description"),
+      mealCategoryId: z.string().nullable().optional().describe("Meal category ID (null to clear)"),
     },
-    async ({ recipeId, summary, description }) => {
+    async ({ recipeId, summary, description, mealCategoryId }) => {
       try {
         const updates: Parameters<typeof updateRecipe>[1] = {};
         if (summary !== undefined) updates.summary = summary;
         if (description !== undefined) updates.description = description;
+        if (mealCategoryId !== undefined) updates.mealCategoryId = mealCategoryId;
 
         const recipe = await updateRecipe(recipeId, updates);
         return {
@@ -299,12 +320,12 @@ Returns: List of scheduled meals.`,
         const startDate = date ? parseDate(date, config.timezone) : getTodayDate(config.timezone);
         const endDate = dateEnd ? parseDate(dateEnd, config.timezone) : getDateOffset(7, config.timezone);
 
-        const sittings = await getMealSittings({
+        const result = await getMealSittings({
           dateMin: startDate,
           dateMax: endDate,
         });
 
-        if (sittings.length === 0) {
+        if (result.sittings.length === 0) {
           return {
             content: [
               {
@@ -315,11 +336,21 @@ Returns: List of scheduled meals.`,
           };
         }
 
-        const list = sittings
+        // Build recipe lookup from included data
+        const recipeMap = new Map(
+          result.recipes.map((r) => [r.id, r.attributes.summary ?? "Untitled Recipe"])
+        );
+
+        const list = result.sittings
           .map((sitting) => {
             const parts = [`- ${sitting.attributes.date ?? "Unknown date"}`];
             if (sitting.attributes.meal_time) {
               parts[0] += ` (${sitting.attributes.meal_time})`;
+            }
+            const recipeId = sitting.relationships?.meal_recipe?.data?.id;
+            if (recipeId) {
+              const recipeName = recipeMap.get(recipeId) ?? `Recipe ${recipeId}`;
+              parts.push(`  Recipe: ${recipeName}`);
             }
             parts.push(`  ID: ${sitting.id}`);
             return parts.join("\n");

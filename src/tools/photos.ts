@@ -27,12 +27,15 @@ Returns: List of photo albums with their IDs.`,
 
         const list = albums
           .map((album) => {
-            const parts = [`- ${album.attributes.name ?? "Untitled Album"} (ID: ${album.id})`];
-            for (const [key, value] of Object.entries(album.attributes)) {
-              if (value !== null && value !== undefined && key !== "name") {
-                parts.push(`  ${key}: ${value}`);
-              }
+            const attrs = album.attributes as Record<string, unknown>;
+            const parts = [`- ${attrs.name ?? "Untitled Album"} (ID: ${album.id})`];
+
+            if (attrs.photo_count !== null && attrs.photo_count !== undefined) {
+              parts.push(`  Photos: ${attrs.photo_count}`);
             }
+            if (attrs.created_at) parts.push(`  Created: ${attrs.created_at}`);
+            if (attrs.updated_at) parts.push(`  Updated: ${attrs.updated_at}`);
+
             return parts.join("\n");
           })
           .join("\n\n");

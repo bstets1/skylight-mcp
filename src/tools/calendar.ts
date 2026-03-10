@@ -64,17 +64,17 @@ Returns a list of events with their titles, times, and details.`,
         // Format events for display
         const eventList = events
           .map((event) => {
-            const attrs = event.attributes;
-            const parts: string[] = [];
+            const attrs = event.attributes as Record<string, unknown>;
+            const title = (attrs.summary as string) ?? (attrs.title as string) ?? "Untitled";
+            const parts = [`- ${title} (ID: ${event.id})`];
 
-            // Add all available attributes
-            for (const [key, value] of Object.entries(attrs)) {
-              if (value !== null && value !== undefined) {
-                parts.push(`  ${key}: ${value}`);
-              }
-            }
+            if (attrs.starts_at) parts.push(`  Start: ${attrs.starts_at}`);
+            if (attrs.ends_at) parts.push(`  End: ${attrs.ends_at}`);
+            if (attrs.all_day) parts.push(`  All day: Yes`);
+            if (attrs.location) parts.push(`  Location: ${attrs.location}`);
+            if (attrs.description) parts.push(`  Notes: ${attrs.description}`);
 
-            return `- Event (ID: ${event.id})\n${parts.join("\n")}`;
+            return parts.join("\n");
           })
           .join("\n\n");
 
@@ -133,13 +133,13 @@ Returns a list of connected calendar sources (Google, iCloud, etc.).`,
 
         const calendarList = calendars
           .map((cal) => {
-            const attrs = cal.attributes;
-            const parts: string[] = [`- Calendar (ID: ${cal.id})`];
+            const attrs = cal.attributes as Record<string, unknown>;
+            const name = (attrs.name as string) ?? "Unnamed";
+            const parts = [`- ${name} (ID: ${cal.id})`];
 
-            for (const [key, value] of Object.entries(attrs)) {
-              if (value !== null && value !== undefined) {
-                parts.push(`  ${key}: ${value}`);
-              }
+            if (attrs.provider) parts.push(`  Provider: ${attrs.provider}`);
+            if (attrs.enabled !== null && attrs.enabled !== undefined) {
+              parts.push(`  Enabled: ${attrs.enabled ? "Yes" : "No"}`);
             }
 
             return parts.join("\n");

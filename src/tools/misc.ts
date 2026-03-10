@@ -33,12 +33,12 @@ Returns: List of available avatars with their IDs and details.`,
 
         const avatarList = avatars
           .map((avatar) => {
-            const parts = [`- Avatar (ID: ${avatar.id})`];
-            for (const [key, value] of Object.entries(avatar.attributes)) {
-              if (value !== null && value !== undefined) {
-                parts.push(`  ${key}: ${value}`);
-              }
-            }
+            const attrs = avatar.attributes;
+            const name = attrs.name ?? "Unnamed";
+            const parts = [`- ${name} (ID: ${avatar.id})`];
+
+            if (attrs.url) parts.push(`  URL: ${attrs.url}`);
+
             return parts.join("\n");
           })
           .join("\n\n");
@@ -89,12 +89,12 @@ Returns: List of available colors with their IDs and hex values.`,
 
         const colorList = colors
           .map((color) => {
-            const parts = [`- Color (ID: ${color.id})`];
-            for (const [key, value] of Object.entries(color.attributes)) {
-              if (value !== null && value !== undefined) {
-                parts.push(`  ${key}: ${value}`);
-              }
-            }
+            const attrs = color.attributes;
+            const name = attrs.name ?? "Unnamed";
+            const parts = [`- ${name} (ID: ${color.id})`];
+
+            if (attrs.hex) parts.push(`  Hex: ${attrs.hex}`);
+
             return parts.join("\n");
           })
           .join("\n\n");

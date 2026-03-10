@@ -33,9 +33,17 @@ export async function findCategoryByName(name: string): Promise<CategoryResource
   const categories = await getCategories();
   const lowerName = name.toLowerCase();
 
+  // Try exact match first (case-insensitive)
+  const exactMatch = categories.find((cat) => {
+    const label = cat.attributes.label?.toLowerCase();
+    return label === lowerName;
+  });
+  if (exactMatch) return exactMatch;
+
+  // Fall back to partial match only if no exact match
   return categories.find((cat) => {
     const label = cat.attributes.label?.toLowerCase();
-    return label && (label === lowerName || label.includes(lowerName));
+    return label && label.includes(lowerName);
   });
 }
 
