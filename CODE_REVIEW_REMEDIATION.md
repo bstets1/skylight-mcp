@@ -188,3 +188,7 @@
 | 2026-03-10 | Claude | 5.1: Verified types already consolidated — MealCategoryResource, MealRecipeResource, MealSittingResource, AvatarResource, ColorResource, AlbumResource all defined in types.ts with typed attributes; endpoint files import from ../types.js | Done |
 | 2026-03-10 | Claude | 5.2: Verified auth.ts already imports and uses AuthenticationError (for 401) and SkylightError (for other HTTP failures) from ../utils/errors.js | Done |
 | 2026-03-10 | Claude | 5.3: Verified server.ts already uses getConfig() (which caches via cachedConfig) instead of calling loadConfig() directly — config is parsed once and cached | Done |
+| 2026-03-10 | Claude | 6.1: Verified tests/config.test.ts covers valid email+password config, valid token config, missing auth exits, email without password exits, default timezone, custom timezone (6 tests) | Done |
+| 2026-03-10 | Claude | 6.2: Verified tests/client.test.ts covers URL construction with frameId replacement and query params, Bearer/Basic auth headers, 404/429/500/401 error handling, 401 retry logic for email/password auth (10 tests) | Done |
+| 2026-03-10 | Claude | 6.3: Verified tests/dates.test.ts covers getDateOffset with timezone, parseDate with timezone, 12:30 AM/PM edge cases, invalid times (25:99, 13:00 PM), invalid dates (2026-13-01 fallthrough), getDateOffsetFrom (29 tests) | Done |
+| 2026-03-10 | Claude | 6.4: Verified tests/errors.test.ts covers ParseError default/custom message, code/statusCode/recoverable properties, formatErrorForMcp handling of ParseError (17 tests) | Done |
