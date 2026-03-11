@@ -382,14 +382,16 @@ Parameters:
 - date (required): Date for the meal (YYYY-MM-DD)
 - mealCategoryId (required): Meal category ID (use get_meal_categories)
 - recipeId: Recipe ID to schedule (optional)
+- addToGroceryList: Automatically add recipe ingredients to the grocery list (optional)
 
 Returns: The created meal sitting.`,
     {
       date: z.string().describe("Date for the meal (YYYY-MM-DD or 'today', 'tomorrow')"),
       mealCategoryId: z.string().describe("Meal category ID (e.g., ID for 'Dinner')"),
       recipeId: z.string().optional().describe("Recipe ID to schedule"),
+      addToGroceryList: z.boolean().optional().describe("Automatically add recipe ingredients to the grocery list"),
     },
-    async ({ date, mealCategoryId, recipeId }) => {
+    async ({ date, mealCategoryId, recipeId, addToGroceryList }) => {
       try {
         const config = getConfig();
         const mealDate = parseDate(date, config.timezone);
@@ -398,6 +400,7 @@ Returns: The created meal sitting.`,
           date: mealDate,
           mealCategoryId,
           recipeId,
+          addToGroceryList,
         });
 
         return {

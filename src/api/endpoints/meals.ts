@@ -157,6 +157,7 @@ export interface CreateMealSittingOptions {
   date: string;
   mealCategoryId: string;
   recipeId?: string;
+  addToGroceryList?: boolean;
 }
 
 /**
@@ -172,6 +173,9 @@ export async function createMealSitting(
   };
   if (options.recipeId) {
     body.meal_recipe_id = options.recipeId;
+  }
+  if (options.addToGroceryList) {
+    body.add_to_grocery_list = true;
   }
 
   const response = await client.post<{ data: MealSittingResource }>(
